@@ -1,4 +1,5 @@
 (function () {
+    // Se crea la clase que va limitar el tablero
     self.Board = function (width, height) {
         this.width = width;
         this.height = height;
@@ -18,6 +19,7 @@
 }());
 
 (function () {
+    //Se crea la clase de la pelota
     self.Ball = function (x, y, radius, board) {
         this.x = x;
         this.y = y;
@@ -35,7 +37,7 @@
     }
 
     self.Ball.prototype = {
-        move: function () {
+        move: function () {//Funcion para mover la pelota
             this.x += (this.speed_x * this.direction);
             this.y += (this.speed_y);
         },
@@ -45,7 +47,7 @@
         get height(){
             return this.radius * 2;
         },
-        collision: function (bar) {
+        collision: function (bar) {//Saber cuando la pelota choca con alguna de las barras
             var relative_intersect_y = (bar.y + (bar.height / 2)) - this.y;
             var normalized_intersect_y = relative_intersect_y / (bar.height / 2);
 
@@ -60,6 +62,7 @@
 }());
 
 (function () {
+    //Clase para crear las barras
     self.Bar = function (x, y, width, height, board) {
         this.x = x;
         this.y = y;
@@ -72,10 +75,10 @@
     }
 
     self.Bar.prototype = {
-        down: function () {
+        down: function () {//Funcion de bajar la barra
             this.y += this.speed;
         },
-        up: function () {
+        up: function () {//Funcion de subir la barra 
             this.y -= this.speed;
         },
         toString: function () {
@@ -96,16 +99,16 @@
     }
 
     self.BoardView.prototype = {
-        clean: function () {
+        clean: function () {//Limpia el contexto de las barras
             this.context.clearRect(0, 0, this.board.width, this.board.height);
         },
-        draw: function () {
+        draw: function () {//Dibujar las barras
             for (var i = this.board.elements.length - 1; i >= 0; i--) {
                 var el = this.board.elements[i];
                 draw(this.context, el);
             }
         },
-        check_collisions: function () {
+        check_collisions: function () {//Verificar si la pelota choca con alguna de las barras
             for (var i = this.board.bars.length - 1; i >= 0; i--) {
                 var bar = this.board.bars[i];
                 if (hit(bar, this.board.ball)) {
@@ -113,7 +116,7 @@
                 }
             }
         },
-        play: function () {
+        play: function () {//Funcion para empezar el juego
             if (this.board.playing) {
                 this.clean();
                 this.draw();
@@ -146,7 +149,7 @@
         return hit;
     }
 
-    function draw(contexto, element) {
+    function draw(contexto, element) { //Dibuja los elementos en el tablero
 
         switch (element.kind) {
             case "rectangle":
@@ -173,25 +176,31 @@ var ball = new Ball(350, 100, 10, board);
 board_view.draw();
 window.requestAnimationFrame(controller);
 
-document.addEventListener("keydown", function (ev) {
+document.addEventListener("keydown", function (ev) { //Validacion de las teclas para los usuarios
     if (ev.keyCode == 38) {
+        // tecla arriba
         ev.preventDefault();
         bar.up();
     } else if (ev.keyCode == 40) {
+         // tecla abajo
         ev.preventDefault();
         bar.down();
     } else if (ev.keyCode == 87) {
+        // tecla w
         ev.preventDefault();
         bar_2.up();
     } else if (ev.keyCode == 83) {
+        // tecla s
         ev.preventDefault();
         bar_2.down();
     } else if (ev.keyCode == 32) {
+        // tecla espacio
         ev.preventDefault();
         board.playing = !board.playing;
     }
 });
 
+// Cargar el evento controlador
 window.addEventListener("load", controller);
 
 function controller() {
