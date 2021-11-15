@@ -6,10 +6,11 @@
         this.game_over = false;
         this.bars = [];
         this.ball = null;
+        this.playing = false;
     }
     self.Board.prototype = {
         get elements() {
-            var elements = this.bars;
+            var elements = this.bars.map(function (bar) { return bar; });
             elements.push(this.ball);
             return elements;
         }
@@ -24,8 +25,37 @@
         this.speed_y = 0;
         this.speed_x = 3;
         this.board = board;
+        this.direction = 1;
+        this.bounce_angle = 0;
+        this.max_bounce_angle = Math.PI / 12;
+        this.speed = 3;
+
         board.ball = this;
         this.kind = "circle";
+    }
+
+    self.Ball.prototype = {
+        move: function () {
+            this.x += (this.speed_x * this.direction);
+            this.y += (this.speed_y);
+        },
+        get width(){
+            return this.radius * 2;
+        },
+        get height(){
+            return this.radius * 2;
+        },
+        collision: function (bar) {
+            var relative_intersect_y = (bar.y + (bar.height / 2)) - this.y;
+            var normalized_intersect_y = relative_intersect_y / (bar.height / 2);
+
+            this.bounce_angle = normalized_intersect_y * this.max_bounce_angle;
+            this.speed_y = this.speed * -Math.sin(this.bounce_angle);
+            this.speed_x = this.speed * Math.cos(this.bounce_angle);
+
+            if (this.x > (this.board.width / 2)) this.direction = -1;
+            else this.direction = 1;
+        }
     }
 }());
 
@@ -75,10 +105,45 @@
                 draw(this.context, el);
             }
         },
+        check_collisions: function () {
+            for (var i = this.board.bars.length - 1; i >= 0; i--) {
+                var bar = this.board.bars[i];
+                if (hit(bar, this.board.ball)) {
+                    this.board.ball.collision(bar);
+                }
+            }
+        },
         play: function () {
-            this.clean();
-            this.draw();
+            if (this.board.playing) {
+                this.clean();
+                this.draw();
+                this.check_collisions();
+                this.board.ball.move();
+            }
         }
+    }
+
+    function hit(a, b) {
+        //Revisa si a colisiona con b
+        var hit = false;
+        //Colsiones horizontales
+        if (b.x + b.width >= a.x && b.x < a.x + a.width) {
+            //Colisiones verticales
+            if (b.y + b.height >= a.y && b.y < a.y + a.height)
+                hit = true;
+        }
+        //Colisión de a con b
+        if (b.x <= a.x && b.x + b.width >= a.x + a.width) {
+            if (b.y <= a.y && b.y + b.height >= a.y + a.height)
+                hit = true;
+        }
+        //Colisión b con a
+        if (a.x <= b.x && a.x + a.width >= b.x + b.width) {
+            if (a.y <= b.y && a.y + a.height >= b.y + b.height)
+                hit = true;
+        }
+
+        return hit;
     }
 
     function draw(contexto, element) {
@@ -103,25 +168,27 @@ var bar = new Bar(20, 100, 40, 100, board);
 var bar_2 = new Bar(700, 100, 40, 100, board);
 var canvas = document.getElementById("canvas");
 var board_view = new BoardView(canvas, board);
-var ball = new Ball(350,100,10,board);
-//console.log(ball);
+var ball = new Ball(350, 100, 10, board);
 
+board_view.draw();
 window.requestAnimationFrame(controller);
 
 document.addEventListener("keydown", function (ev) {
-    ev.preventDefault();
     if (ev.keyCode == 38) {
+        ev.preventDefault();
         bar.up();
-        board_view.draw();
     } else if (ev.keyCode == 40) {
+        ev.preventDefault();
         bar.down();
-        board_view.draw();
     } else if (ev.keyCode == 87) {
+        ev.preventDefault();
         bar_2.up();
-        board_view.draw();
     } else if (ev.keyCode == 83) {
+        ev.preventDefault();
         bar_2.down();
-        board_view.draw();
+    } else if (ev.keyCode == 32) {
+        ev.preventDefault();
+        board.playing = !board.playing;
     }
 });
 
