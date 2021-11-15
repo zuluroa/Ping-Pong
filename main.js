@@ -10,9 +10,22 @@
     self.Board.prototype = {
         get elements() {
             var elements = this.bars;
-            //elements.push(this.ball);
+            elements.push(this.ball);
             return elements;
         }
+    }
+}());
+
+(function () {
+    self.Ball = function (x, y, radius, board) {
+        this.x = x;
+        this.y = y;
+        this.radius = radius;
+        this.speed_y = 0;
+        this.speed_x = 3;
+        this.board = board;
+        board.ball = this;
+        this.kind = "circle";
     }
 }());
 
@@ -53,8 +66,8 @@
     }
 
     self.BoardView.prototype = {
-        clean: function(){
-            this.context.clearRect(0,0,this.board.width,this.board.height);
+        clean: function () {
+            this.context.clearRect(0, 0, this.board.width, this.board.height);
         },
         draw: function () {
             for (var i = this.board.elements.length - 1; i >= 0; i--) {
@@ -62,7 +75,7 @@
                 draw(this.context, el);
             }
         },
-        play: function(){
+        play: function () {
             this.clean();
             this.draw();
         }
@@ -74,6 +87,12 @@
             case "rectangle":
                 contexto.fillRect(element.x, element.y, element.width, element.height);
                 break;
+            case "circle":
+                contexto.beginPath();
+                contexto.arc(element.x, element.y, element.radius, 0, 7);
+                contexto.fill();
+                contexto.closePath();
+                break;
         }
 
     }
@@ -84,7 +103,8 @@ var bar = new Bar(20, 100, 40, 100, board);
 var bar_2 = new Bar(700, 100, 40, 100, board);
 var canvas = document.getElementById("canvas");
 var board_view = new BoardView(canvas, board);
-console.log(board_view);
+var ball = new Ball(350,100,10,board);
+//console.log(ball);
 
 window.requestAnimationFrame(controller);
 
