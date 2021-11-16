@@ -47,7 +47,7 @@
         get height(){
             return this.radius * 2;
         },
-        collision: function (bar) {//Saber cuando la pelota choca con alguna de las barras
+        collision: function (bar) {//Reacciona a la colision a la barra que recibe como parametro
             var relative_intersect_y = (bar.y + (bar.height / 2)) - this.y;
             var normalized_intersect_y = relative_intersect_y / (bar.height / 2);
 
@@ -69,7 +69,7 @@
         this.width = width;
         this.height = height;
         this.board = board;
-        this.speed = 10;
+        this.speed = 15;
         this.board.bars.push(this);
         this.kind = "rectangle";
     }
@@ -127,6 +127,16 @@
     }
 
     function hit(a, b) {
+
+        if (this.ball.x < 0 || this.ball.x > 800) {
+            board.playing = !board.playing;
+            var mensaje = document.getElementById("mensaje");
+            mensaje.innerHTML = "JUEGO TERMINADO!";
+            setTimeout(function() {
+                window.location.reload();
+            }, 2000);
+        }
+
         //Revisa si a colisiona con b
         var hit = false;
         //Colsiones horizontales
@@ -167,11 +177,13 @@
 }());
 
 var board = new Board(800, 400);
-var bar = new Bar(20, 100, 40, 100, board);
-var bar_2 = new Bar(700, 100, 40, 100, board);
+var bar = new Bar(0, 100, 20, 100, board);
+var bar_2 = new Bar(780, 100, 20, 100, board);
+var bar_up = new Bar(0, 0, 800, 10, board);
+var bar_down = new Bar(0, 390, 800, 10, board);
 var canvas = document.getElementById("canvas");
 var board_view = new BoardView(canvas, board);
-var ball = new Ball(350, 100, 10, board);
+var ball = new Ball(350, 150, 10, board);
 
 board_view.draw();
 window.requestAnimationFrame(controller);
